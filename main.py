@@ -11,7 +11,8 @@ token = '1477316760:AAFtOgxHQc9PuNBtTvWQ0t4fNJGhXWF4WXk'
 #загружаем токен нашего бота
 bot = telebot.TeleBot(token)
 users = pd.read_csv('users.csv')
-current = my_parser.get_today()
+packs = pd.read_csv('packs.csv')
+current = pd.DataFrame(data=my_parser.get_today(), columns=['name', 'link', 'short_name', 'b_price'])
 time_cur = time.time()
 pin = ''
 pin_check = ''
@@ -26,7 +27,7 @@ def cur():# делает информацию по акциям актуальн
     global current
     global time_cur
     if (time.time() - time_cur)/3600 >= 1:
-        current = my_parser.get_today()
+        current = pd.DataFrame(data=my_parser.get_today(), columns=['name', 'link', 'short_name', 'b_price'])
         time_cur = time.time()
     return
 
@@ -67,7 +68,7 @@ def callback_worker(call):
     elif call.data == 'pass':
         cur()
         s = '\n'
-        for i in current:
+        for i in current.values:
             s += f' - ({i[2]}) {i[0]}  текущая стоимость: {i[3]}$\n'
         s += '\nВы все еще можете зарегистрироваться (введите /reg).'
         bot.send_message(call.from_user.id, 'Пусть так. В режиме просмотра вам доступна только данная информация.\n' + s)
@@ -105,9 +106,48 @@ def callback_worker(call):
                 pin = ''
                 bot.send_message(call.from_user.id, 'Что-то пошло не так. Введите пинкод заново', reply_markup=form)
 
+@bot.message_handler(commands=['today'])
+def today(m):
+    global aut
+    cur()
+    s = 'Рекомендуемые к покупке акции:\n'
+    for i in current.values:
+        s += f' - ({i[2]}) {i[0]}  текущая стоимость: {i[3]}$\n'
+    bot.send_message(m.from_user.id, s)
+    if aut == 1:
+        bot.send_message(m.from_user.id, '''Можете внести данне о покупке акций. Тогда в будущем можно отследить прибыль.
+                                        Для этого вводите строки вида "BIO 4", где в начале стоит короткое наименование акции,
+                                        а в конце - количество купленных штук.''')
+    else:
+        bot.send_message(m.from_user.id, '''Для того, чтобы была возможность отследить прибыль потенциально купленных акций - 
+                                        зарегистрируйтесь. Тогда я буду хранить данные о вашем портфеле''')
+
+def buying(x):
+    s = x.text.split(' ')
+    if x[0] in current['short_name'].values and str.isdigit(x[1]):
+        return True
+    return False
+
+@bot.message_handler(func=buying)
+def buy(m):
+    s = m.text.split(' ')
+    if aut = 1:
+        bot.send_message(m.from_user.id, 'Пожалуйста, предворительно зарегистрируйтесь')
+        return
+    try:
+        packs.loc[len(packs)] = [m.from_user.id, s[o], int(s[1]), current[current['short_name'] == s[0]]['b_price'].values]
+        packs.to_csv('packs.csv', index=False)
+        bot.send_message(m.from_user.id, 'Покупка добавлена!')
+    except:
+        bot.send_message(m.from_user.id, 'Проверьте корректность ввода покупки')
+
+@bot.message_handler(commands=['pack'])
+def pack(m):
+    #Показывает текущее состояние портфеля
+    
+
 @bot.message_handler(commands=['reg'])
 def reg(m):
-    form = InlineKeyboardMarkup()
     bot.send_message(m.from_user.id, 'Придумайте, пожалуйста, пинкод' + 
                     '(введите 6 цифр):',
                     reply_markup=form)
@@ -117,7 +157,7 @@ def helper(m):
     bot.send_message(m.from_user.id,
     '''Данный бот будет Вашим помошником в торговле акциями! Имеются такие команды как
         - /reg позволяет зарегистрироваться
-        - /...
+        - /today показывает рекомендуемые акции(доступно без регистрации)
     Для подробного описания команды можете добавить к ней "_help". ''')
 
 bot.polling(none_stop=True, interval=0)
