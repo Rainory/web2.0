@@ -161,6 +161,34 @@ def selling(x):
         return True
     return False
 
+@bot.message_handler(func=selling)
+def sell(m):
+    global packs
+    s = m.text.split(' ')
+    if aut == 0:
+        bot.send_message(m.from_user.id, 'Пожалуйста, предворительно зарегистрируйтесь')
+        return
+    try:
+        up = packs[packs['user_id'] == m.from_user.id]
+        if s[1] in up['short_name'].values:
+            upp = up[up['short_name'] == s[1]]
+            am = upp['amount'].values[0]
+            if am < int(s[2]):
+                bot.send_message(m.from_user.id, 'Данных акций не хватает в портфеле')
+                return
+            upp['b_price'] = (upp['b_price'].values[0]*am - current[current['short_name'] == s[1]]['b_price'].values[0]*int(s[2]))/(am - int(s[2]))
+            upp['amount'] = am - int(s[2])
+            packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])] = upp
+            if upp['amount'].values[0] == 0:
+                del packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])]
+                bot.send_message(m.from_user.id, 'Акции проданы и закончились в портфеле')
+        else:
+            bot.send_message(m.from_user.id, 'Данных акций нет в портфеле!')
+        packs.to_csv('packs.csv', index=False)
+        bot.send_message(m.from_user.id, 'Акции проданы!')
+    except:
+        bot.send_message(m.from_user.id, 'Проверьте корректность ввода продажи')
+
 @bot.message_handler(commands=['pack'])
 def pack(m):
     #Показывает текущее состояние портфеля
@@ -171,12 +199,11 @@ def pack(m):
             bot.send_message(m.from_user.id, 'Ваш портфель пока пуст. Для того, чтобы совершить покупки напишите /today.')
             return
         up['price'] = up['link'].apply(my_parser.price)
-        print(up)
         res = sum(up['price'] - up['b_price'])
         s = 'акция количество цена_покупки цена\n\n'
         for i in np.arange(len(up)):
             s += f'{up["short_name"].values[0]}\t{up["amount"].values[0]}\t{up["b_price"].values[0]}\t{up["price"].values[0]}\n'
-        s += f'\n Изменение портфеля: {res}'
+        s += f'\n Изменение портфеля (прибыль): {res}'
         bot.send_message(m.from_user.id, s + '\n\n Можете также частично продать свои акции, используя "- BIO 5".')
     else:
         bot.send_message(m.from_user.id, 'Пройдите регистрацию, чтобы получить доступ к данной функции. Для этого напишите /reg.')
