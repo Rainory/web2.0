@@ -1,8 +1,5 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import pandas as pd
-import numpy as np
-from time import sleep
 import re
 
 
@@ -10,6 +7,26 @@ options = webdriver.ChromeOptions()
 options.add_argument('headless')
 browser = webdriver.Chrome(chrome_options=options)
 
-def get_today():
-    # Находим акции с хорошим потенциалом роста, которые просели за последнее время
-    url = ''
+def pars(data, res):
+    for i in range(len(data)):
+        tds = data[i].find_all('td')
+        name = tds[2].find('a').text
+        link = 'https://www.finviz.com/' + re.search(r'href=".+"', str(tds[1].find('a'))).group()[6:-1]
+        short_name = tds[1].find('a').text
+        b_price = float(tds[8].find('a').text)
+        res.append([name, link, short_name, b_price])
+    return
+
+def get_today(s=False):
+    # Находим акции с хорошим потенциалом роста, которые просели за последней месяц
+    # парсим их с сайта www.finviz.com
+    url = 'https://www.finviz.com/screener.ashx?v=111&f=cap_midover,fa_debteq_u1,fa_eps5years_o15,fa_pe_u15,ta_perf_4w10u&o=pe'
+    browser.get(url)
+    html = browser.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    data = soup.find_all('tr', {'class': 'table-dark-row-cp'})
+    res = []
+    pars(data, res)
+    data = soup.find_all('tr', {'class': 'table-light-row-cp'})
+    pars(data, res)
+    return res
