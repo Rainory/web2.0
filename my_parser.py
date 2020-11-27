@@ -36,7 +36,7 @@ def price(s):
     #получаем текущую цену акции
     browser = webdriver.Chrome(chrome_options=options)
     browser.get(s)
-    html = browsr.page_source
+    html = browser.page_source
     browser.close()
     soup = BeautifulSoup(html, 'html.parser')
     data = soup.find('table', {'class': 'snapshot-table2'})
