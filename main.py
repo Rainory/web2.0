@@ -180,7 +180,7 @@ def sell(m):
             upp['amount'] = am - int(s[2])
             packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])] = upp
             if upp['amount'].values[0] == 0:
-                del packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])]
+                packs.drop(packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])].index)
                 bot.send_message(m.from_user.id, 'Акции проданы и закончились в портфеле')
         else:
             bot.send_message(m.from_user.id, 'Данных акций нет в портфеле!')
