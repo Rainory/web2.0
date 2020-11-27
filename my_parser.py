@@ -31,3 +31,14 @@ def get_today():
     data = soup.find_all('tr', {'class': 'table-light-row-cp'})
     pars(data, res)
     return res
+
+def price(s):
+    #получаем текущую цену акции
+    browser = webdriver.Chrome(chrome_options=options)
+    browser.get(s)
+    html = browsr.page_source
+    browser.close()
+    soup = BeautifulSoup(html, 'html.parser')
+    data = soup.find('table', {'class': 'snapshot-table2'})
+    data = data.find_all('tr')[10]
+    return float(data.find_all('td')[-1].find('b').text)
