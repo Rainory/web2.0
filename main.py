@@ -16,6 +16,13 @@ def greetings(m):
 
 @bot.message_handler(func=greetings)
 def hi_message(m):
-    bot.send_message(m.from_user.id, 'Привет, ' + m.from_user.first_name + ')')
+    bot.send_message(m.from_user.id, 'Здравствуй, ' + m.from_user.first_name)
+
+@bot.message_handler(commands=['help'])
+def helper(m):
+    bot.send_message(m.from_user.id,
+    '''Данный бот будет Вашим помошником в торговле акциями! Имеются такие команды как
+        - /...
+    Для подробного описания команды можете добавить к ней "_help". ''')
 
 bot.polling(none_stop=True, interval=0)
