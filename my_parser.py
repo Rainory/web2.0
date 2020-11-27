@@ -5,7 +5,6 @@ import re
 
 options = webdriver.ChromeOptions()
 options.add_argument('headless')
-browser = webdriver.Chrome(chrome_options=options)
 
 def pars(data, res):
     for i in range(len(data)):
@@ -17,12 +16,14 @@ def pars(data, res):
         res.append([name, link, short_name, b_price])
     return
 
-def get_today(s=False):
+def get_today():
     # Находим акции с хорошим потенциалом роста, которые просели за последней месяц
     # парсим их с сайта www.finviz.com
+    browser = webdriver.Chrome(chrome_options=options)
     url = 'https://www.finviz.com/screener.ashx?v=111&f=cap_midover,fa_debteq_u1,fa_eps5years_o15,fa_pe_u15,ta_perf_4w10u&o=pe'
     browser.get(url)
     html = browser.page_source
+    browser.close()
     soup = BeautifulSoup(html, 'html.parser')
     data = soup.find_all('tr', {'class': 'table-dark-row-cp'})
     res = []
