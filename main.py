@@ -18,6 +18,9 @@ pin_check = ''
 n = 0
 aut = 0
 ind = 0
+form = InlineKeyboardMarkup()
+for i in range(10):
+    form.add(InlineKeyboardButton(text=f'{i}', callback_data=f'{i}'))
 
 def cur():# делает информацию по акциям актуальной
     global current
@@ -38,11 +41,9 @@ def greetings(m):
 @bot.message_handler(func=greetings)
 @bot.message_handler(commands=['start'])
 def hi_message(m):
+    global n
     bot.send_message(m.from_user.id, 'Здравствуй, ' + m.from_user.first_name)
-    if m.from_user.id in users['user_id']:
-        form = InlineKeyboardMarkup()
-        for i in range(10):
-            form.add(InlineKeyboardButton(text=f'{i}', callback_data=f'{i}'))
+    if m.from_user.id in list(users['user_id']):
         bot.send_message(m.from_user.id, 'Введите свой пинкод:', reply_markup=form)
         n = 2
     else:
@@ -96,15 +97,17 @@ def callback_worker(call):
                 pin = ''
                 pin_check = ''
         else:
-            if pin == users[users['user_id'] == call.from_user.id]['password']:
+            print(users[users['user_id'] == call.from_user.id]['password'].values)
+            if pin == users[users['user_id'] == call.from_user.id]['password'].values:
                 bot.send_message(call.from_user.id, 'Вы вошли.\n Для справки введите /help.')
                 aut = 1
+            else:
+                pin = ''
+                bot.send_message(call.from_user.id, 'Что-то пошло не так. Введите пинкод заново', reply_markup=form)
 
 @bot.message_handler(commands=['reg'])
 def reg(m):
     form = InlineKeyboardMarkup()
-    for i in range(10):
-        form.add(InlineKeyboardButton(text=f'{i}', callback_data=f'{i}'))
     bot.send_message(m.from_user.id, 'Придумайте, пожалуйста, пинкод' + 
                     '(введите 6 цифр):',
                     reply_markup=form)
@@ -113,6 +116,7 @@ def reg(m):
 def helper(m):
     bot.send_message(m.from_user.id,
     '''Данный бот будет Вашим помошником в торговле акциями! Имеются такие команды как
+        - /reg позволяет зарегистрироваться
         - /...
     Для подробного описания команды можете добавить к ней "_help". ''')
 
