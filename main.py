@@ -210,9 +210,23 @@ def pack(m):
 
 @bot.message_handler(commands=['reg'])
 def reg(m):
+    if m.from_user.id in users['user_id'].values:
+        bot.send_message(m.from_user.id, 'Вы уже зарегестрированы. Введите /a для авторизации, если еще не вошли')
+        return
     bot.send_message(m.from_user.id, 'Придумайте, пожалуйста, пинкод' + 
                     '(введите 6 цифр):',
                     reply_markup=form)
+
+@bot.message_handler(commands=['a'])
+def a(m):
+    if aut == 1:
+        bot.send_message(m.from_user.id, 'Вы уже авторизованы')
+        return
+    if m.from_user.id in users['user_id'].values:
+        bot.send_message(m.from_user.id, 'Введите свой пинкод:', reply_markup=form)
+        n = 2
+    else:
+        bot.send_message(m.from_user.id, 'Вы еще не зарегестрированны. Для регистрации введите /reg')
 
 @bot.message_handler(commands=['help'])
 def helper(m):
