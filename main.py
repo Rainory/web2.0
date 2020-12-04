@@ -13,7 +13,8 @@ token = '1477316760:AAFtOgxHQc9PuNBtTvWQ0t4fNJGhXWF4WXk'
 bot = telebot.TeleBot(token)
 users = pd.read_csv('users.csv')
 packs = pd.read_csv('packs.csv')
-current = pd.DataFrame(data=my_parser.get_today(), columns=['name', 'link', 'short_name', 'b_price'])
+current = pd.DataFrame(data=my_parser.get_today(),
+                        columns=['name', 'link', 'short_name', 'b_price'])
 time_cur = time.time()
 pin = ''
 pin_check = ''
@@ -28,13 +29,18 @@ def cur():# делает информацию по акциям актуальн
     global current
     global time_cur
     if (time.time() - time_cur)/3600 >= 1:
-        current = pd.DataFrame(data=my_parser.get_today(), columns=['name', 'link', 'short_name', 'b_price'])
+        current = pd.DataFrame(data=my_parser.get_today(),
+                                columns=['name', 'link', 'short_name', 'b_price'])
         time_cur = time.time()
     return
 
 def greetings(m):
     text = m.text
-    gr = ['привет', 'ку', 'здравствуй', 'хай', 'прив']
+    gr = ['привет',
+        'ку',
+        'здравствуй',
+        'хай',
+        'прив']
     for i in gr:
         if text.find(i) != -1:
             return True
@@ -44,7 +50,11 @@ def greetings(m):
 @bot.message_handler(commands=['start'])
 def hi_message(m):
     global n
-    bot.send_message(m.from_user.id, 'Здравствуй, ' + m.from_user.first_name)
+    if aut == 1:
+        bot.send_message(m.from_user.id, 'Мы ведь еще не прощались.')
+        return
+    else:
+        bot.send_message(m.from_user.id, 'Здравствуй, ' + m.from_user.first_name)
     if m.from_user.id in list(users['user_id']):
         bot.send_message(m.from_user.id, 'Введите свой пинкод:', reply_markup=form)
         n = 2
@@ -55,7 +65,8 @@ def hi_message(m):
         keyboard.add(k_reg)
         keyboard.add(k_pass)
         bot.send_message(m.from_user.id,
-                        'Вижу, что ты еще не регистрировался. Можешь сделать это сейчас или продолжить в режиме просмотра',
+                        'Вижу, что ты еще не регистрировался. Можешь сделать'
+                        ' это сейчас или продолжить в режиме просмотра',
                         reply_markup=keyboard)
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -73,7 +84,9 @@ def callback_worker(call):
         for i in current.values:
             s += f' - ({i[2]}) {i[0]}  текущая стоимость: {i[3]}$\n'
         s += '\nВы все еще можете зарегистрироваться (введите /reg).'
-        bot.send_message(call.from_user.id, 'Пусть так. В режиме просмотра вам доступна только данная информация.\n' + s)
+        bot.send_message(call.from_user.id,
+                        'Пусть так. В режиме просмотра вам дост'
+                        'упна только данная информация.\n' + s)
     for i in range(10):
         if call.data == str(i) and len(pin) < 6:
             pin += call.data
@@ -96,7 +109,9 @@ def callback_worker(call):
                 bot.send_message(call.from_user.id, 'Пинкод сохранен')
                 aut = 1
             else:
-                bot.send_message(call.from_user.id, 'Вы ошиблись. Можете начать регистрацию заново, написав /reg')
+                bot.send_message(call.from_user.id,
+                                'Вы ошиблись. Можете начать рег'
+                                'истрацию заново, написав /reg')
                 pin = ''
                 pin_check = ''
         else:
@@ -105,7 +120,9 @@ def callback_worker(call):
                 aut = 1
             else:
                 pin = ''
-                bot.send_message(call.from_user.id, 'Что-то пошло не так. Введите пинкод заново', reply_markup=form)
+                bot.send_message(call.from_user.id,
+                                'Что-то пошло не так. Введите пинкод заново',
+                                reply_markup=form)
 
 @bot.message_handler(commands=['today'])
 def today(m):
@@ -116,12 +133,14 @@ def today(m):
         s += f' - ({i[2]}) {i[0]}  текущая стоимость: {i[3]}$\n'
     bot.send_message(m.from_user.id, s)
     if aut == 1:
-        bot.send_message(m.from_user.id, '''Можете внести данне о покупке акций. Тогда в будущем можно отследить прибыль.
-                                            Для этого вводите строки вида "BIO 4", где в начале стоит короткое наименование акции,
-                                            а в конце - количество купленных штук.''')
+        bot.send_message(m.from_user.id,
+                        'Можете внести данне о покупке акций. Тогда в будущем можно отследить прибыль. '
+                        'Для этого вводите строки вида "BIO 4", где в начале стоит короткое наименование акции,'
+                        ' а в конце - количество купленных штук.')
     else:
-        bot.send_message(m.from_user.id, '''Для того, чтобы была возможность отследить прибыль потенциально купленных акций - 
-                                            зарегистрируйтесь. Тогда я буду хранить данные о вашем портфеле''')
+        bot.send_message(m.from_user.id,
+                        'Для того, чтобы была возможность отследить прибыль потенциально купленных акций - '
+                        'зарегистрируйтесь. Тогда я буду хранить данные о вашем портфеле')
 
 def buying(x):
     s = x.text.split(' ')
@@ -141,7 +160,9 @@ def buy(m):
         if s[0] in up['short_name'].values:
             upp = up[up['short_name'] == s[0]]
             am = upp['amount']
-            upp['b_price'] = (upp['b_price']*am + current[current['short_name'] == s[0]]['b_price']*int(s[1]))/(am + int(s[1]))
+            xxx = upp['b_price']*am
+            yyy = current[current['short_name'] == s[0]]['b_price']*int(s[1])
+            upp['b_price'] = (xxx + yyy)/(am + int(s[1]))
             upp['amount'] = am + int(s[1])
             packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[0])] = upp
         else:
@@ -176,12 +197,16 @@ def sell(m):
             if am < int(s[2]):
                 bot.send_message(m.from_user.id, 'Данных акций не хватает в портфеле')
                 return
-            upp['b_price'] = (upp['b_price'].values[0]*am - current[current['short_name'] == s[1]]['b_price'].values[0]*int(s[2]))/(am - int(s[2]))
+            xxx = upp['b_price'].values[0]*am
+            yyy = current[current['short_name'] == s[1]]['b_price'].values[0]*int(s[2])
+            upp['b_price'] = (xxx - yyy)/(am - int(s[2]))
             upp['amount'] = am - int(s[2])
             packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])] = upp
             if upp['amount'].values[0] == 0:
-                packs.drop(packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])].index)
+                packs = packs.drop(packs[(packs['user_id'] == m.from_user.id) & (packs['short_name'] == s[1])].index)
+                packs.to_csv('packs.csv', index=False)
                 bot.send_message(m.from_user.id, 'Акции проданы и закончились в портфеле')
+                return
         else:
             bot.send_message(m.from_user.id, 'Данных акций нет в портфеле!')
         packs.to_csv('packs.csv', index=False)
@@ -194,46 +219,74 @@ def pack(m):
     #Показывает текущее состояние портфеля
     if aut == 1:
         global packs
-        up = packs[packs['user_id'] == m.from_user.id][['short_name', 'amount', 'b_price', 'link']]
+        up = packs[packs['user_id'] == m.from_user.id]
+        up = up[['short_name', 'amount', 'b_price', 'link']]
         if len(up) == 0:
-            bot.send_message(m.from_user.id, 'Ваш портфель пока пуст. Для того, чтобы совершить покупки напишите /today.')
+            bot.send_message(m.from_user.id,
+                            'Ваш портфель пока пуст. Для того, '
+                            'чтобы совершить покупки напишите /today.')
             return
         up['price'] = up['link'].apply(my_parser.price)
         res = sum(up['price'] - up['b_price'])
-        s = 'акция количество цена_покупки цена\n\n'
+        s = 'акция / количество / цена_покупки / цена\n\n'
         for i in np.arange(len(up)):
-            s += f'{up["short_name"].values[0]}\t{up["amount"].values[0]}\t{up["b_price"].values[0]}\t{up["price"].values[0]}\n'
+            s += (f'{up["short_name"].values[i]} / \t'
+                  f'{up["amount"].values[i]} / \t'
+                  f'{up["b_price"].values[i]} / \t{up["price"].values[i]}\n')
         s += f'\n Изменение портфеля (прибыль): {res}'
-        bot.send_message(m.from_user.id, s + '\n\n Можете также частично продать свои акции, используя "- BIO 5".')
+        bot.send_message(m.from_user.id,
+                        s + '\n\n Можете также частично продать'
+                        ' свои акции, используя "- BIO 5".')
     else:
-        bot.send_message(m.from_user.id, 'Пройдите регистрацию, чтобы получить доступ к данной функции. Для этого напишите /reg.')
+        bot.send_message(m.from_user.id,
+                        'Пройдите регистрацию, чтобы получить доступ'
+                        ' к данной функции. Для этого напишите /reg.')
 
 @bot.message_handler(commands=['reg'])
 def reg(m):
     if m.from_user.id in users['user_id'].values:
-        bot.send_message(m.from_user.id, 'Вы уже зарегестрированы. Введите /a для авторизации, если еще не вошли')
+        bot.send_message(m.from_user.id,
+                        'Вы ведь уже зарегестрированы')
         return
     bot.send_message(m.from_user.id, 'Придумайте, пожалуйста, пинкод' + 
                     '(введите 6 цифр):',
                     reply_markup=form)
 
-@bot.message_handler(commands=['a'])
-def a(m):
-    if aut == 1:
-        bot.send_message(m.from_user.id, 'Вы уже авторизованы')
-        return
-    if m.from_user.id in users['user_id'].values:
-        bot.send_message(m.from_user.id, 'Введите свой пинкод:', reply_markup=form)
-        n = 2
-    else:
-        bot.send_message(m.from_user.id, 'Вы еще не зарегестрированны. Для регистрации введите /reg')
-
 @bot.message_handler(commands=['help'])
 def helper(m):
     bot.send_message(m.from_user.id,
-    '''Данный бот будет Вашим помошником в торговле акциями! Имеются такие команды как
-    - /reg\tпозволяет зарегистрироваться
-    - /today\tпоказывает рекомендуемые акции(доступно без регистрации)
-    - /pack\t возвращает текущее состояние вашего портфеля(требуется регистрация)''')
+    'Данный бот будет Вашим помошником в торговле акциями! Имеются такие команды как\n'
+    '\t- /reg\tпозволяет зарегистрироваться\n'
+    '\t- /today\tпоказывает рекомендуемые акции(доступно без регистрации)\n'
+    '\t- /pack\tвозвращает текущее состояние вашего портфеля(требуется регистрация)\n'
+    '\t- /exit\tпозволяет раздлгиниться')
+
+def bye(m):
+    bs = [
+        'пока',
+        'прощай',
+        'до свидания',
+        'бай',
+        'всего хорошего',
+        'всего доброго',
+        'честь имею'
+    ]
+    text = m.text
+    for i in bs:
+        if text.find(i) != -1:
+            return True
+    return False
+
+
+@bot.message_handler(func=bye)
+@bot.message_handler(commands=['exit'])
+def bb(m):
+    global aut
+    global pin
+    global pin_check
+    bot.send_message(m.from_user.id, 'До свидания!\nЗаглядывайте еще')
+    aut = 0
+    pin = ''
+    pin_check = ''
 
 bot.polling(none_stop=True, interval=0)
