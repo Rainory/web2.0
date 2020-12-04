@@ -2,8 +2,11 @@ from bs4 import BeautifulSoup
 import re
 import requests
 
-hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
-       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)'
+                     'AppleWebKit/537.11 (KHTML, like Gecko)'
+                     'Chrome/23.0.1271.64 Safari/537.11',
+       'Accept': 'text/html,application/xhtml+xml,'
+                 'application/xml;q=0.9,*/*;q=0.8',
        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
        'Accept-Encoding': 'none',
        'Accept-Language': 'en-US,en;q=0.8',
@@ -22,7 +25,8 @@ def pars(data, res):
 def get_today():
     # Находим акции с хорошим потенциалом роста, которые просели за последней месяц
     # парсим их с сайта www.finviz.com
-    url = 'https://www.finviz.com/screener.ashx?v=111&f=cap_midover,fa_debteq_u1,fa_eps5years_o15,fa_pe_u15,ta_perf_4w10u&o=pe'
+    url = ('https://www.finviz.com/screener.ashx?v=111&f=cap_midover'
+           ',fa_debteq_u1,fa_eps5years_o15,fa_pe_u15,ta_perf_4w10u&o=pe')
     html = requests.get(url, headers=hdr).text
     soup = BeautifulSoup(html, 'html.parser')
     data = soup.find_all('tr', {'class': 'table-dark-row-cp'})
